@@ -47,19 +47,19 @@ def clean_name(name: str) -> str:
     return name.strip().strip('"').strip()
 
 
-def parse_address_field(raw_str: str) -> list[dict]:
-    """Return list of {name, email} dicts"""
-    results = []
-    if not raw_str:
-        return results
+# def parse_address_field(raw_str: str) -> list[dict]:
+#     """Return list of {name, email} dicts"""
+#     results = []
+#     if not raw_str:
+#         return results
 
-    parsed = getaddresses([raw_str])
-    for name, email in parsed:
-        results.append({
-            "name": clean_name(name),
-            "email": email.lower().strip() if email else ""
-        })
-    return results
+#     parsed = getaddresses([raw_str])
+#     for name, email in parsed:
+#         results.append({
+#             "name": clean_name(name),
+#             "email": email.lower().strip() if email else ""
+#         })
+#     return results
 
 
 def parse_headers(raw_text: str) -> dict:
@@ -89,7 +89,7 @@ def preprocess_email(email_doc):
 
 # --- Extract recipients ---
     to_field = {
-        "name": clean_name(headers.get("X-To", "")) or clean_name(parseaddr(headers.get("From", ""))[0]),
+        "name": clean_name(headers.get("X-To", "")),
         "email": headers.get("To", "").lower().strip()
     }
 
@@ -110,7 +110,7 @@ def preprocess_email(email_doc):
 
 
 # --- Example Run ---
-email = emails_col.find_one({"_id": ObjectId("6892fe052589ce0138d7759e")})
+email = emails_col.find_one({"_id": ObjectId("6892fe052589ce0138d7759f")})
 if email:
     processed = preprocess_email(email)
     emails_col.update_one({"_id": email["_id"]}, {"$set": processed})
