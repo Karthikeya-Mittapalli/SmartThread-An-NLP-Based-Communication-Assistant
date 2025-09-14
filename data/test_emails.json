@@ -1,0 +1,22 @@
+[
+    {
+        "subject": "Project Update",
+        "is_unread": true,
+        "message": "Message-ID: <msg1@enron.com>\nDate: Mon, 12 Apr 2025 10:00:00 -0500\nFrom: Alice Johnson <alice.johnson@enron.com>\nTo: Bob Smith <bob.smith@enron.com>\nSubject: Project Update\n\nHi Bob,\n\nThe new project timeline is drafted. Please review and share your thoughts.\n\nThanks,\nAlice"
+    },
+    {
+        "subject": "Re: Project Update",
+        "is_unread": true,
+        "message": "Message-ID: <msg2@enron.com>\nIn-Reply-To: <msg1@enron.com>\nReferences: <msg1@enron.com>\nDate: Mon, 12 Apr 2025 11:00:00 -0500\nFrom: Bob Smith <bob.smith@enron.com>\nTo: Alice Johnson <alice.johnson@enron.com>\nSubject: Re: Project Update\n\nHi Alice,\n\nThanks for sending. The timeline looks good. Let’s finalize by Wednesday.\n\nRegards,\nBob"
+    },
+    {
+        "subject": "URGENT: Financial Report Due Tomorrow",
+        "is_unread": true,
+        "message": "Message-ID: <msg3@enron.com>\nDate: Tue, 13 Apr 2025 09:30:00 -0500\nFrom: Carol Lee <carol.lee@enron.com>\nTo: Finance Team <finance@enron.com>\nSubject: URGENT: Financial Report Due Tomorrow\n\nTeam,\n\nWe must submit the Q1 financial report to the board by tomorrow 5 PM. Please prioritize completing all outstanding sections today.\n\nThis is a high-priority task with no delays allowed.\n\n- Carol"
+    },
+    {
+        "subject": "Lunch Invitation",
+        "is_unread": true,
+        "message": "Message-ID: <msg4@enron.com>\nDate: Tue, 13 Apr 2025 12:00:00 -0500\nFrom: David Green <david.green@enron.com>\nTo: Alice Johnson <alice.johnson@enron.com>\nSubject: Lunch Invitation\n\nHi Alice,\n\nA few of us are planning to go out for lunch this Friday at 1 PM. Would you like to join?\n\nBest,\nDavid"
+    }
+]
