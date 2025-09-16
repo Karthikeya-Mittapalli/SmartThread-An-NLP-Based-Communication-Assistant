@@ -106,10 +106,18 @@ def preprocess_email(email_doc: dict) -> dict:
     }
 
     # to, cc, bcc as arrays
-    to_field = {
-        "name": clean_name(headers.get("X-To", "")),
-        "email": headers.get("To", "").lower().strip()
-    }
+    to_list = []
+    raw_to = headers.get("To", "")
+    if raw_to:
+        parsed_to = parse_address_field(raw_to)
+        # if we also have X-To, use it to clean names where possible
+        x_to = headers.get("X-To", "")
+        if x_to:
+            cleaned_x_to = [clean_name(n) for n, _ in getaddresses([x_to])]
+            for i, entry in enumerate(parsed_to):
+                if i < len(cleaned_x_to) and cleaned_x_to[i]:
+                    entry["name"] = cleaned_x_to[i]
+        to_list = parsed_to
     cc_list = parse_address_field(headers.get(
         "X-cc", "") or headers.get("Cc", ""))
     bcc_list = parse_address_field(headers.get(
@@ -133,7 +141,7 @@ def preprocess_email(email_doc: dict) -> dict:
     return {
         "message_id": message_id,
         "from": from_field,
-        "to": to_field,
+        "to": to_list,
         "cc": cc_list,
         "bcc": bcc_list,
         "subject": (headers.get("Subject") or "").strip(),
