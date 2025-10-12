@@ -1,5 +1,6 @@
 // frontend/src/EmailsPage.js
 import React, { useEffect, useState } from "react";
+import "./EmailPage.css";
 
 const EmailsPage = () => {
   const [emails, setEmails] = useState([]);
@@ -46,52 +47,37 @@ const EmailsPage = () => {
   }
 
   return (
-    <div style={{ padding: "1rem", maxWidth: "800px", margin: "0 auto" }}>
-        <h2>Unread Emails</h2>
-        {emails.map((email) => (
-            <div
-                key={email.id}
-                style={{
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                padding: "1rem",
-                marginBottom: "1rem",
-                backgroundColor: "#f9f9f9",
-                }}
-            >
-            <p><strong>From:</strong> {email.from}</p>
-            <p><strong>Subject:</strong> {email.subject}</p>
-            <p><strong>Snippet:</strong> {email.snippet}</p>
-            <hr />
-            <p>
+    <div className="emails-page">
+      <h2>Unread Emails</h2>
+      {emails.map((email) => (
+        <div key={email.id} className="email-card">
+          <p className="email-field"><strong>From:</strong> {email.from}</p>
+          <p className="email-field"><strong>Subject:</strong> {email.subject}</p>
+          <p className="email-snippet">{email.snippet}</p>
+          <div className="email-summary">
             <strong>Summary:</strong>
             <br />
-            {email.summary.split("\n").map((line, idx) => (
-                <span key={idx}>
-                {line}
-                <br />
-                </span>
-            ))}
-            </p>
-            <p>
+            {email.summary}
+          </div>
+          <div className="email-priority">
             <strong>Priority:</strong>{" "}
             <span
-                style={{
-                color:
-                    email.priority === "High"
-                    ? "red"
-                    : email.priority === "Medium"
-                    ? "orange"
-                    : "green",
-                fontWeight: "bold",
-                }}
+              className={
+                email.priority === "High"
+                  ? "high"
+                  : email.priority === "Medium"
+                  ? "medium"
+                  : "low"
+              }
             >
-                {email.priority}
+              {email.priority}
             </span>
-            </p>
+          </div>
         </div>
-        ))}
-    </div>
+    )
+  )
+  }
+</div>
   );
 };
 

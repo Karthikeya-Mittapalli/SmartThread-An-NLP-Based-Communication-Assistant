@@ -1,13 +1,15 @@
 from flask import Flask, redirect, request, session, jsonify
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
 from dotenv import load_dotenv
-import os
 from flask_cors import CORS
 
 from src.priority_detection_flask import detect_priority
 from src.thread_summarization_flask import summarize_thread
 
+import os
+import time
 load_dotenv()
 
 app = Flask(__name__)
@@ -75,7 +77,6 @@ def fetch_emails():
     if not creds_data:
         return redirect("/login")
 
-    from google.oauth2.credentials import Credentials
     creds = Credentials(**creds_data)
     service = build("gmail", "v1", credentials=creds)
 
@@ -98,8 +99,9 @@ def fetch_emails():
 
             # Summarize
             summary_raw = summarize_thread(thread_messages)
+            time.sleep(2)
             # Clean formatting: add bullets and bold titles
-            summary_clean = f"**Email Thread Summary**\n**Project:** NLP Demo\n**From:** {sender}\n**Key Points:**\n{summary_raw}"
+            summary_clean = f"Email Thread Summary:\nFrom: {sender}\nKey Points:\n{summary_raw}"
 
             # Detect priority
             priority = detect_priority(summary_clean)
