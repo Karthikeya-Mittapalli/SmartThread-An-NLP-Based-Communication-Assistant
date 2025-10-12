@@ -11,3 +11,5 @@ HISTORY.txt
 README.txt
 venv/
 .env
+client_secret.json
+__pycache__/
