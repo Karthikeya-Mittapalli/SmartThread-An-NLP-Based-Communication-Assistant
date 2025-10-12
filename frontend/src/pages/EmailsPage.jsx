@@ -1,6 +1,6 @@
 // frontend/src/EmailsPage.js
 import React, { useEffect, useState } from "react";
-import "./EmailPage.css";
+import "./EmailsPage.css";
 
 const EmailsPage = () => {
   const [emails, setEmails] = useState([]);
