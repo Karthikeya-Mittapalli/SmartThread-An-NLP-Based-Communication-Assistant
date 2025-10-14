@@ -12,6 +12,7 @@ This README guides you through setting up the project from scratch.
 3. [Frontend Setup (React)](#frontend-setup-react)
 4. [Environment Variables](#environment-variables)
 5. [Running the Project](#running-the-project)
+6. [Optional: Updating Dependencies](#optional-updating-dependencies)
 
 ---
 
