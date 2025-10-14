@@ -1,3 +1,4 @@
+import "./HomePage.css";
 function HomePage() {
   const handleLogin = () => {
     window.location.href = `${process.env.REACT_APP_BACKEND_URL}/login`;

@@ -1,13 +1,16 @@
 from flask import Flask, redirect, request, session, jsonify
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
 from dotenv import load_dotenv
-import os
 from flask_cors import CORS
 
 from src.priority_detection_flask import detect_priority
 from src.thread_summarization_flask import summarize_thread
+from src.email_analyzer import analyze_email
 
+import os
+import time
 load_dotenv()
 
 app = Flask(__name__)
@@ -75,7 +78,6 @@ def fetch_emails():
     if not creds_data:
         return redirect("/login")
 
-    from google.oauth2.credentials import Credentials
     creds = Credentials(**creds_data)
     service = build("gmail", "v1", credentials=creds)
 
@@ -94,26 +96,33 @@ def fetch_emails():
             sender = next((h["value"] for h in headers if h["name"] == "From"), "(Unknown Sender)")
             snippet = msg_data.get("snippet", "")
 
-            thread_messages = [{"from": sender, "text": snippet, "timestamp": ""}]
+            analysis_result = analyze_email(snippet)
 
-            # Summarize
-            summary_raw = summarize_thread(thread_messages)
-            # Clean formatting: add bullets and bold titles
-            summary_clean = f"**Email Thread Summary**\n**Project:** NLP Demo\n**From:** {sender}\n**Key Points:**\n{summary_raw}"
+            # thread_messages = [{"from": sender, "text": snippet, "timestamp": ""}]
 
-            # Detect priority
-            priority = detect_priority(summary_clean)
+            # # Summarize
+            # summary_raw = summarize_thread(thread_messages)
+            # time.sleep(3)
+            # # Clean formatting: add bullets and bold titles
+            # summary_clean = f"Email Thread Summary:\nFrom: {sender}\nKey Points:\n{summary_raw}"
+
+            # # Detect priority
+            # priority = detect_priority(summary_clean)
+            # time.sleep(5)
 
             emails.append({
                 "id": msg["id"],
                 "subject": subject,
                 "from": sender,
                 "snippet": snippet,
-                "summary": summary_clean,
-                "priority": priority
+                "summary": analysis_result.get("summary", snippet),
+                "priority": analysis_result.get("priority", "Medium")
             })
 
+            time.sleep(5)
+
         except Exception as e:
+            time.sleep(5)
             print(f"[FetchEmails] Error processing message {msg['id']}: {e}")
 
     # Sort emails by priority: High -> Medium -> Low
