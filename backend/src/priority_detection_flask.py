@@ -45,7 +45,7 @@ Consider deadlines, urgent words (ASAP, urgent), instructions, and actionable it
         return label
     except Exception as e:
         print(f"[PriorityDetection] API error: {e}")
-        return "Medium"
+        return "FAILED"
 
 def detect_priority(text: str) -> str:
     """Wrapper for external use."""

@@ -7,6 +7,7 @@ from flask_cors import CORS
 
 from src.priority_detection_flask import detect_priority
 from src.thread_summarization_flask import summarize_thread
+from src.email_analyzer import analyze_email
 
 import os
 import time
@@ -95,27 +96,33 @@ def fetch_emails():
             sender = next((h["value"] for h in headers if h["name"] == "From"), "(Unknown Sender)")
             snippet = msg_data.get("snippet", "")
 
-            thread_messages = [{"from": sender, "text": snippet, "timestamp": ""}]
+            analysis_result = analyze_email(snippet)
 
-            # Summarize
-            summary_raw = summarize_thread(thread_messages)
-            time.sleep(2)
-            # Clean formatting: add bullets and bold titles
-            summary_clean = f"Email Thread Summary:\nFrom: {sender}\nKey Points:\n{summary_raw}"
+            # thread_messages = [{"from": sender, "text": snippet, "timestamp": ""}]
 
-            # Detect priority
-            priority = detect_priority(summary_clean)
+            # # Summarize
+            # summary_raw = summarize_thread(thread_messages)
+            # time.sleep(3)
+            # # Clean formatting: add bullets and bold titles
+            # summary_clean = f"Email Thread Summary:\nFrom: {sender}\nKey Points:\n{summary_raw}"
+
+            # # Detect priority
+            # priority = detect_priority(summary_clean)
+            # time.sleep(5)
 
             emails.append({
                 "id": msg["id"],
                 "subject": subject,
                 "from": sender,
                 "snippet": snippet,
-                "summary": summary_clean,
-                "priority": priority
+                "summary": analysis_result.get("summary", snippet),
+                "priority": analysis_result.get("priority", "Medium")
             })
 
+            time.sleep(5)
+
         except Exception as e:
+            time.sleep(5)
             print(f"[FetchEmails] Error processing message {msg['id']}: {e}")
 
     # Sort emails by priority: High -> Medium -> Low
