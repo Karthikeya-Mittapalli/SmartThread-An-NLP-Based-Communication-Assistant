@@ -2,6 +2,7 @@ from flask import Flask, redirect, request, session, jsonify
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
+from email.mime.text import MIMEText
 from dotenv import load_dotenv
 from flask_cors import CORS
 
@@ -11,6 +12,7 @@ from src.email_analyzer import analyze_email
 
 import os
 import time
+import base64
 load_dotenv()
 
 app = Flask(__name__)
@@ -89,33 +91,24 @@ def fetch_emails():
     emails = []
     for msg in messages:
         try:
-            msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
+            msg_data = service.users().messages().get(userId="me", id=msg["id"], format="full").execute()
             headers = msg_data["payload"]["headers"]
 
             subject = next((h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
             sender = next((h["value"] for h in headers if h["name"] == "From"), "(Unknown Sender)")
-            snippet = msg_data.get("snippet", "")
 
-            analysis_result = analyze_email(snippet)
+            payload = msg_data.get("payload", {})
+            body_text = extract_message_body(payload) or msg_data.get("snippet", "")
 
-            # thread_messages = [{"from": sender, "text": snippet, "timestamp": ""}]
-
-            # # Summarize
-            # summary_raw = summarize_thread(thread_messages)
-            # time.sleep(3)
-            # # Clean formatting: add bullets and bold titles
-            # summary_clean = f"Email Thread Summary:\nFrom: {sender}\nKey Points:\n{summary_raw}"
-
-            # # Detect priority
-            # priority = detect_priority(summary_clean)
-            # time.sleep(5)
+            analysis_result = analyze_email(body_text)
 
             emails.append({
                 "id": msg["id"],
+                "threadId": msg_data.get("threadId"),
                 "subject": subject,
                 "from": sender,
-                "snippet": snippet,
-                "summary": analysis_result.get("summary", snippet),
+                "body": body_text,
+                "summary": analysis_result.get("summary", body_text[:200] + "..."),
                 "priority": analysis_result.get("priority", "Medium")
             })
 
@@ -130,6 +123,67 @@ def fetch_emails():
 
     return jsonify(emails_sorted)
 
+# Step 4: Reply to an email
+@app.route("/reply_email", methods=["POST"])
+def reply_email():
+    data = request.get_json()
+    msg_id = data.get("message_id")
+    reply_text = data.get("reply_text")
+
+    creds_data = session.get("credentials")
+    if not creds_data:
+        return redirect("/login")
+
+    creds = Credentials(**creds_data)
+    service = build("gmail", "v1", credentials=creds)
+
+    # 1️⃣ Fetch the original message
+    original_msg = service.users().messages().get(userId="me", id=msg_id, format="metadata", metadataHeaders=["Subject", "From", "Message-ID"]).execute()
+    headers = {h["name"]: h["value"] for h in original_msg["payload"]["headers"]}
+
+    subject = headers.get("Subject", "(No Subject)")
+    sender = headers.get("From")
+    message_id = headers.get("Message-ID")
+    thread_id = original_msg["threadId"]
+
+    # 2️⃣ Build reply email
+    reply_subject = f"Re: {subject}" if not subject.startswith("Re:") else subject
+    reply_to = sender.split("<")[-1].replace(">", "").strip()  # Extract clean email address
+
+    reply = MIMEText(reply_text)
+    reply["To"] = reply_to
+    reply["Subject"] = reply_subject
+    reply["In-Reply-To"] = message_id
+    reply["References"] = message_id
+
+    raw_msg = base64.urlsafe_b64encode(reply.as_bytes()).decode()
+
+    # 3️⃣ Send the message in the same thread
+    sent_msg = service.users().messages().send(
+        userId="me",
+        body={
+            "raw": raw_msg,
+            "threadId": thread_id
+        }
+    ).execute()
+
+    return jsonify({"status": "success", "sent_message_id": sent_msg["id"], "thread_id": thread_id})
+
+
+def extract_message_body(payload):
+    """Recursively extract plain text content from a Gmail message payload."""
+    if payload.get("mimeType") == "text/plain":
+        return base64.urlsafe_b64decode(payload["body"].get("data", "")).decode("utf-8", errors="ignore")
+
+    elif "parts" in payload:
+        parts_text = []
+        for part in payload["parts"]:
+            text = extract_message_body(part)
+            if text:
+                parts_text.append(text)
+        return "\n".join(parts_text)
+
+    return ""
 
 
 if __name__ == "__main__":
