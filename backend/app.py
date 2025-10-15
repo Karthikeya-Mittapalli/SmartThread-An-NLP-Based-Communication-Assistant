@@ -23,11 +23,14 @@ SCOPES = [os.getenv("GOOGLE_SCOPES")]
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
+
 @app.route("/")
 def home():
     return "SmartMail Flask Backend is running!"
 
 # Step 1: Redirect to Google OAuth
+
+
 @app.route("/login")
 def login():
     flow = Flow.from_client_secrets_file(
@@ -44,6 +47,8 @@ def login():
     return redirect(auth_url)
 
 # Step 2: Handle callback and fetch token
+
+
 @app.route("/auth/callback")
 def auth_callback():
     state = session.get("state")
@@ -68,9 +73,11 @@ def auth_callback():
     frontend_url = os.getenv("REACT_APP_FRONTEND_URL", "http://localhost:3000")
     return redirect(f"{frontend_url}/emails")
 
+
 # Step 3: Fetch unread emails
 # backend/app.py (only fetch_emails route updated)
 PRIORITY_ORDER = {"High": 0, "Medium": 1, "Low": 2}  # for sorting
+
 
 @app.route("/fetch_emails")
 def fetch_emails():
@@ -89,11 +96,14 @@ def fetch_emails():
     emails = []
     for msg in messages:
         try:
-            msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
+            msg_data = service.users().messages().get(
+                userId="me", id=msg["id"]).execute()
             headers = msg_data["payload"]["headers"]
 
-            subject = next((h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
-            sender = next((h["value"] for h in headers if h["name"] == "From"), "(Unknown Sender)")
+            subject = next(
+                (h["value"] for h in headers if h["name"] == "Subject"), "(No Subject)")
+            sender = next(
+                (h["value"] for h in headers if h["name"] == "From"), "(Unknown Sender)")
             snippet = msg_data.get("snippet", "")
 
             analysis_result = analyze_email(snippet)
@@ -126,10 +136,10 @@ def fetch_emails():
             print(f"[FetchEmails] Error processing message {msg['id']}: {e}")
 
     # Sort emails by priority: High -> Medium -> Low
-    emails_sorted = sorted(emails, key=lambda e: PRIORITY_ORDER.get(e["priority"], 3))
+    emails_sorted = sorted(
+        emails, key=lambda e: PRIORITY_ORDER.get(e["priority"], 3))
 
     return jsonify(emails_sorted)
-
 
 
 if __name__ == "__main__":
