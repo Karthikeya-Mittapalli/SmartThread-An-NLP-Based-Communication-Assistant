@@ -13,23 +13,43 @@ PRIORITY_LABELS = ["High", "Medium", "Low"]
 
 def analyze_email(text: str) -> dict:
     """
-    Summarizes and classifies the priority of an email in a single API call.
-    Returns a dictionary with 'summary' and 'priority'.
+    Summarizes, classifies, and structures an email in one API call.
+    Returns a JSON dict like:
+    {
+    "summary": "...",
+    "priority": "High",
+    "Decisions": "...",
+    "Action Items": "...",
+    "Deadlines": "...",
+    "Urgency": "...",
+    "Open Issues": "..."
+    }
     """
     prompt = f"""
-    You are an expert email analyst. Your task is to analyze the email text provided
-    and return a structured JSON object.
+    You are an expert business email analyst. Analyze the email text below
+    and output a structured JSON object summarizing its key aspects.
 
-    Perform two tasks:
-    1.  **Summarize**: Create a concise, one-sentence summary for a busy professional.
-    2.  **Classify Priority**: Determine the priority. It must be one of: "High", "Medium", or "Low".
+    Tasks:
+    1. Summarize the email in one concise sentence for a busy professional.
+    2. Determine the overall priority (High, Medium, or Low).
+    3. Identify and extract the following (write "None" if not applicable):
+       - Decisions made
+       - Action Items
+       - Deadlines
+       - Urgency
+       - Open Issues or pending clarifications
 
-    Return ONLY a valid JSON object with two keys: "summary" and "priority".
+    Format your reply as **only** a JSON object, no explanations.
 
-    Example Response Format:
+    Example Format:
     {{
-      "summary": "The project deadline has been moved to this Friday, requiring immediate action on the report.",
-      "priority": "High"
+      "summary": "The client requests final approval on the Q3 marketing proposal by Friday.",
+      "priority": "High",
+      "Decisions": "Proceed with final review of proposal.",
+      "Action Items": "John to prepare final draft; Sarah to schedule review meeting.",
+      "Deadlines": "Friday, 5 PM",
+      "Urgency": "High",
+      "Open Issues": "Need feedback from finance team."
     }}
 
     Email Text:

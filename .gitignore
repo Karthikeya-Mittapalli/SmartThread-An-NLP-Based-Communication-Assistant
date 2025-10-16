@@ -12,6 +12,7 @@ instance/
 venv/
 .env
 client_secret.json
+emails_cache.db
 
 # ======================
 # React / Node

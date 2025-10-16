@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* ✅ universal fix for box model overflow */
+}
+
 /* ---------- Global Layout ---------- */
 .emails-page {
   font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -62,6 +68,8 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(226, 232, 240, 0.8);
   transition: all 0.3s ease;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .email-card:hover {
@@ -190,4 +198,109 @@
   .email-card {
     padding: 1rem;
   }
+}
+
+/* ---------- Reply Section ---------- */
+.reply-section {
+  margin-top: 1rem;
+  background: #f0f4ff;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  transition: all 0.3s ease;
+}
+
+.reply-section strong {
+  font-size: 0.95rem;
+  color: #1a365d;
+}
+
+/* ---------- Reply Textarea ---------- */
+.reply-textarea {
+  width: 100%;
+  font-size: 0.95rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e0;
+  resize: vertical;
+  font-family: inherit;
+  color: #2d3748;
+  background: #ffffff;
+  transition: border 0.25s ease, box-shadow 0.25s ease;
+}
+
+.reply-textarea:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+}
+
+/* ---------- Reply Buttons Container ---------- */
+.reply-buttons {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ---------- Reply Buttons ---------- */
+.reply-buttons button {
+  font-size: 0.9rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+/* Generate / Send Reply Button */
+.reply-buttons button:first-child {
+  background: #3182ce;
+  color: #ffffff;
+}
+
+.reply-buttons button:first-child:hover {
+  background: #2b6cb0;
+}
+
+/* Hide Reply Button */
+.hide-reply-btn {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+.hide-reply-btn:hover {
+  background: #cbd5e0;
+}
+
+/* Disabled Button State */
+.reply-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Generate Reply Button ---------- */
+.generate-reply-btn {
+  background: #3182ce;
+  color: white;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 0.8rem;
+}
+
+.generate-reply-btn:hover:not(:disabled) {
+  background: #2b6cb0;
+  transform: translateY(-1px);
+}
+
+.generate-reply-btn:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
 }

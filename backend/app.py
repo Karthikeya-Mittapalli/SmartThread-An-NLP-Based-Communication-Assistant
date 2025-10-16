@@ -3,17 +3,21 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from email.mime.text import MIMEText
+from email.utils import parseaddr
 from dotenv import load_dotenv
 from flask_cors import CORS
 
 from src.priority_detection_flask import detect_priority
 from src.thread_summarization_flask import summarize_thread
 from src.email_analyzer import analyze_email
+from src.smart_reply import suggest_reply
+from utils.db import init_db, save_email, get_email_body, get_emails_from_db
 
 import os
 import time
 import base64
 load_dotenv()
+init_db()
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -21,7 +25,7 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 CLIENT_SECRET_FILE = os.getenv("GOOGLE_CLIENT_SECRET_FILE")
 REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
-SCOPES = [os.getenv("GOOGLE_SCOPES")]
+SCOPES = os.getenv("GOOGLE_SCOPES", "").split()
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -90,8 +94,17 @@ def fetch_emails():
     creds = Credentials(**creds_data)
     service = build("gmail", "v1", credentials=creds)
 
+    profile = service.users().getProfile(userId="me").execute()
+    user_id = profile.get("emailAddress", "unknown_user")
+
+    cached_emails = get_emails_from_db(user_id)
+    if cached_emails:
+        # Sort by priority before sending
+        emails_sorted = sorted(cached_emails, key=lambda e: PRIORITY_ORDER.get(e["priority"], 3))
+        return jsonify(emails_sorted)
+
     results = service.users().messages().list(
-        userId="me", labelIds=["UNREAD"], maxResults=10
+        userId="me", labelIds=["UNREAD"], maxResults=2
     ).execute()
     messages = results.get("messages", [])
 
@@ -119,6 +132,9 @@ def fetch_emails():
                 "priority": analysis_result.get("priority", "Medium")
             })
 
+            # Save email to local DB
+            save_email(user_id,emails[-1])
+
             time.sleep(5)
 
         except Exception as e:
@@ -131,7 +147,40 @@ def fetch_emails():
 
     return jsonify(emails_sorted)
 
-# Step 4: Reply to an email
+
+
+# Step 4: Generate smart reply
+@app.route("/generate_reply", methods=["POST"])
+def generate_reply():
+    creds_data = session.get("credentials")
+    if not creds_data:
+        return redirect("/login")
+
+    creds = Credentials(**creds_data)
+    service = build("gmail", "v1", credentials=creds)
+
+    profile = service.users().getProfile(userId="me").execute()
+    user_id = profile.get("emailAddress", "unknown_user")
+    data = request.get_json()
+    message_id = data.get("message_id")
+    if not message_id:
+        return jsonify({"error": "message_id is required"}), 400
+
+    message_body = get_email_body(user_id, message_id)
+
+    if not message_body:
+        return jsonify({"error": "message_body is required"}), 400
+
+    try:
+        # call your smart reply logic
+        suggested = suggest_reply(message_body)
+        return jsonify({"reply": suggested})
+    except Exception as e:
+        print(f"[GenerateReply] Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+# Step 5: Reply to an email
 @app.route("/reply_email", methods=["POST"])
 def reply_email():
     data = request.get_json()
@@ -156,7 +205,8 @@ def reply_email():
 
     # 2️⃣ Build reply email
     reply_subject = f"Re: {subject}" if not subject.startswith("Re:") else subject
-    reply_to = sender.split("<")[-1].replace(">", "").strip()  # Extract clean email address
+    # reply_to = sender.split("<")[-1].replace(">", "").strip()  # Extract clean email address
+    reply_to = parseaddr(sender)[1]  # More robust extraction of email address
 
     reply = MIMEText(reply_text)
     reply["To"] = reply_to
