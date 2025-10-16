@@ -1,83 +1,127 @@
-**Enron Email AI Processing**
+# SmartThread: NLP-Based Communication Assistant
 
-This project provides tools to preprocess Enron emails, detect email priority, and summarize email threads using AI models via OpenRouter.
+This repository contains the backend (Flask) and frontend (React) for the SmartThread project.  
+This README guides you through setting up the project from scratch.
 
-**Setup**
+---
 
-1. Clone the repository
+## Table of Contents
 
-git clone <your-repo-url>
-cd <repo-folder>
+1. [Prerequisites](#prerequisites)
+2. [Backend Setup (Flask)](#backend-setup-flask)
+3. [Frontend Setup (React)](#frontend-setup-react)
+4. [Environment Variables](#environment-variables)
+5. [Running the Project](#running-the-project)
+6. [Optional: Updating Dependencies](#optional-updating-dependencies)
 
-1. Create and activate a virtual environment
+---
 
-python -m venv venv  
-source venv/bin/activate (Linux / Mac)  
-venv\\Scripts\\activate (Windows)
+## Prerequisites
 
-1. Install required packages
+Before starting, make sure you have the following installed:
 
+- [Python 3.12+](https://www.python.org/downloads/)
+- [Node.js 18+ and npm](https://nodejs.org/)
+- [MongoDB](https://www.mongodb.com/try/download/community) (if using a local database)
+
+---
+
+## Backend Setup (Flask)
+
+1. **Navigate to the backend folder:**
+
+```bash
+cd backend
+```
+
+2. **Create and activate a virtual environment:**
+
+```bash
+# Windows(cmd)
+python -m venv venv
+.\venv\Scripts\activate.bat
+```
+
+3. **Install dependencies:**
+
+```bash
+pip install pip-tools
+pip-compile requirements.in
 pip install -r requirements.txt
 
-Minimal requirements.txt for this project includes:
+```
 
-pymongo==4.14.1  
-python-dotenv==1.1.1  
-requests==2.32.5  
-certifi==2025.8.3  
-charset-normalizer==3.4.3  
-idna==3.10  
-urllib3==2.5.0
+## Frontend Setup (React)
 
-1. Set your OpenRouter API keys by creating a .env file
+1. **Navigate to the frontend folder:**
 
-OPENROUTER_API_KEY=your_key
+```bash
+cd ../frontend
+```
 
-**Step 1: Preprocess Emails**
+2. **Install dependencies:**
 
-Ensure you have already set up MongoDB with the Enron email dataset (in enron_email/mails).
+```bash
+npm install
+```
 
-Preprocess raw emails in MongoDB and generate clean_message, from, and to fields.
+3. **Start the development server:**
 
-1. Run pre-processing.py
-2. Make sure to update the ObjectId in the code to the email you want to preprocess. For example, replace the ObjectId in:
+```bash
+npm start
+```
 
-email = emails_col.find_one({"\_id": ObjectId("6892fe052589ce0138d7759f")})
+## Environment Variables
 
-**Step 2: Priority Detection**
+Both backend and frontend require environment variables. Create a .env file in the backend:
 
-Classify preprocessed emails into High, Medium, or Low priority using OpenRouter.
+```bash
+# Backend .env example
+OPENROUTER_API_KEY_1 = <your_openrouter_key>
+GOOGLE_CLIENT_SECRET_FILE= client_secret.json
+GOOGLE_REDIRECT_URI= http://localhost:8000/auth/callback
+GOOGLE_SCOPES = https://www.googleapis.com/auth/gmail.readonly
+FLASK_SECRET_KEY = <your_secret>
+REACT_APP_FRONTEND_URL=http://localhost:3000
+```
 
-1. Run priority_detection.py
-2. Update the ObjectId in the code to the email you want to classify:
+For frontend React, you can create a .env in the frontend root folder:
 
-sample_email_id = "6892fe052589ce0138d7759f"  
-process_email_by_id(sample_email_id)
+```bash
+REACT_APP_BACKEND_URL = http://localhost:8000
+```
 
-**Step 3: Thread Summarization**
+## Running the Project
 
-Summarize a list of emails in a conversation thread.
+1. **Start backend:**
 
-1. Run thread_summarization.py
-2. Provide the thread as a list of messages with sender, role, timestamp, and text. Example:
+```bash
+# Activate venv first
+cd backend
+.\venv\Scripts\activate.bat #On Windows(cmd)
+python app.py
+```
 
-sample_thread = \[  
-{"sender": "Bob", "role": "Engineer", "timestamp": "2025-08-19 09:12", "text": "..."},  
-{"sender": "Charlie", "role": "Analyst", "timestamp": "2025-08-19 09:30", "text": "..."}  
-\]  
-summary = summarize_thread(sample_thread)  
-print(summary)
+1. **Start frontend:**
 
-**Optional: Batch Processing**
+```bash
+# Activate venv first
+cd frontend
+npm start
+```
 
-Instead of manually changing ObjectIds, you can process all emails without priority:
+## Optional: Updating Dependencies
 
-for email_doc in emails_col.find({"priority": {"$exists": False}}):  
-process_email_by_id(email_doc\["\_id"\])
+If you add new packages to backend:
 
-**Workflow Summary**
+```bash
+# Add new package to requirements.in
+pip-compile requirements.in
+pip install -r requirements.txt
+```
 
-1. Run pre-processing.py → adds clean_message, sender, recipient info
-2. Run priority_detection.py → adds priority field (High/Medium/Low)
-3. Optionally, run thread_summarization.py for email threads
-4. Repeat for additional emails as needed
+For frontend:
+
+```bash
+npm install new-package
+```
