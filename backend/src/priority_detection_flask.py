@@ -1,52 +1,64 @@
-# src/priority_detection.py
-import os
-import requests
-from dotenv import load_dotenv
+import spacy # type: ignore
+from spacy.cli import download # type: ignore
 
-load_dotenv()
+# ---------- Cached spaCy loader ----------
+_nlp = None
 
-API_KEY = os.getenv("OPENROUTER_API_KEY_1")
-if not API_KEY:
-    raise ValueError("Please set OPENROUTER_API_KEY_1 in your .env file.")
+def get_nlp():
+    """Load and cache spaCy model once."""
+    global _nlp
+    if _nlp is None:
+        model_name = "en_core_web_sm"
+        try:
+            _nlp = spacy.load(model_name, disable=["parser"])
+        except OSError:
+            print(f"[INFO] spaCy model '{model_name}' not found. Downloading...")
+            download(model_name)
+            _nlp = spacy.load(model_name, disable=["parser"])
+        print("[INFO] spaCy model loaded and cached successfully.")
+    return _nlp
 
-API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "meta-llama/llama-3.3-8b-instruct:free"
-PRIORITY_LABELS = ["High", "Medium", "Low"]
 
-def classify_priority(text: str) -> str:
-    """Classifies email or thread summary into High/Medium/Low priority."""
-    prompt = f"""
-You are an assistant that classifies the importance/urgency of a short email or a thread summary.
-Return ONLY one of: High, Medium, Low.
+# ---------- Manual NLP-based priority detection ----------
+def detect_priority(email_text: str) -> str:
+    """
+    Detects priority based on certain keywords, entities, and tone of the email.
+    Returns: "High", "Medium", or "Low"
+    """
+    nlp = get_nlp()
+    doc = nlp(email_text.lower())
 
-Text:
-\"\"\"{text}\"\"\"
+    # --- Keyword-based heuristic rules ---
+    high_keywords = [
+        "urgent", "asap", "immediately", "critical", "important", "deadline",
+        "issue", "problem", "payment", "fail", "error", "approve", "cancel", "delay"
+    ]
+    medium_keywords = ["update", "review", "schedule", "meeting", "reminder", "follow up"]
+    low_keywords = ["thanks", "thank you", "newsletter", "greetings", "invitation"]
 
-Consider deadlines, urgent words (ASAP, urgent), instructions, and actionable items.
-"""
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "model": MODEL,
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ]
-    }
+    high_count = sum(1 for token in doc if token.lemma_ in high_keywords)
+    medium_count = sum(1 for token in doc if token.lemma_ in medium_keywords)
+    low_count = sum(1 for token in doc if token.lemma_ in low_keywords)
+
+    # --- Named Entity Recognition (NER) cues ---
+    has_date_or_money = any(ent.label_ in ["DATE", "MONEY"] for ent in doc.ents)
+
+    # --- Scoring system ---
+    score = high_count * 3 + medium_count * 2 + low_count
+    if has_date_or_money:
+        score += 2  # deadlines or invoices often imply higher priority
+
+    # --- Decision ---
+    if score >= 5 or high_count > 0:
+        priority = "High"
+    elif 3 <= score < 5:
+        priority = "Medium"
+    else:
+        priority = "Low"
     
-    try:
-        r = requests.post(API_URL, headers=headers, json=data, timeout=15)
-        r.raise_for_status()
-        label = r.json()["choices"][0]["message"]["content"].strip()
-        if label not in PRIORITY_LABELS:
-            return "Medium"
-        return label
-    except Exception as e:
-        print(f"[PriorityDetection] API error: {e}")
-        return "FAILED"
-
-def detect_priority(text: str) -> str:
-    """Wrapper for external use."""
-    return classify_priority(text)
+    entities = [ent.text for ent in doc.ents if ent.label_ in ["ORG", "PERSON", "DATE", "MONEY", "GPE"]]
+    
+    return {
+        "priority": priority,
+        "entities": entities
+    }

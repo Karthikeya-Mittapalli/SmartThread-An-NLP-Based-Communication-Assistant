@@ -1,17 +1,15 @@
-from flask import Flask, redirect, request, session, jsonify
-from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
+from flask import Flask, redirect, request, session, jsonify # type: ignore
+from google_auth_oauthlib.flow import Flow # type: ignore
+from googleapiclient.discovery import build # type: ignore
+from google.oauth2.credentials import Credentials # type: ignore
 from email.mime.text import MIMEText
 from email.utils import parseaddr
-from dotenv import load_dotenv
-from flask_cors import CORS
+from dotenv import load_dotenv # type: ignore
+from flask_cors import CORS # type: ignore
 
-from src.priority_detection_flask import detect_priority
-from src.thread_summarization_flask import summarize_thread
 from src.email_analyzer import analyze_email
 from src.smart_reply import suggest_reply
-from utils.db import init_db, save_email, get_email_body, get_emails_from_db
+from utils.db import init_db, save_email, get_email_body, get_emails_from_db, update_email_priority
 
 import os
 import time
@@ -128,8 +126,9 @@ def fetch_emails():
                 "subject": subject,
                 "from": sender,
                 "body": body_text,
-                "summary": analysis_result.get("summary", body_text[:200] + "..."),
-                "priority": analysis_result.get("priority", "Medium")
+                "summary": analysis_result["summary"],
+                "priority": analysis_result["priority"],
+                "entities": analysis_result["entities"]
             })
 
             # Save email to local DB
@@ -146,8 +145,6 @@ def fetch_emails():
         emails, key=lambda e: PRIORITY_ORDER.get(e["priority"], 3))
 
     return jsonify(emails_sorted)
-
-
 
 # Step 4: Generate smart reply
 @app.route("/generate_reply", methods=["POST"])
