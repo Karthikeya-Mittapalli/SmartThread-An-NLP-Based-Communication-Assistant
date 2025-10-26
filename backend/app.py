@@ -27,6 +27,16 @@ SCOPES = os.getenv("GOOGLE_SCOPES", "").split()
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
+# Handle Google client_secret.json for Render
+CLIENT_SECRET_PATH = "client_secret.json"
+
+# If deployed
+if os.environ.get("RENDER") or not os.path.exists(CLIENT_SECRET_PATH):
+    client_secret_data = os.environ.get("GOOGLE_CLIENT_SECRET_JSON")
+    if client_secret_data:
+        with open(CLIENT_SECRET_PATH, "w") as f:
+            f.write(client_secret_data)
+
 
 @app.route("/")
 def home():
