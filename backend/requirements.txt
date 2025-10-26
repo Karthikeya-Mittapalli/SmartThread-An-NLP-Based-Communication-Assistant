@@ -6,6 +6,8 @@
 #
 annotated-types==0.7.0
     # via pydantic
+beautifulsoup4==4.14.2
+    # via -r requirements.in
 blinker==1.9.0
     # via flask
 blis==1.3.0
@@ -66,6 +68,8 @@ google-auth-oauthlib==1.2.2
     # via -r requirements.in
 googleapis-common-protos==1.71.0
     # via google-api-core
+gunicorn==23.0.0
+    # via -r requirements.in
 httplib2==0.31.0
     # via
     #   google-api-python-client
@@ -107,6 +111,7 @@ oauthlib==3.3.1
     # via requests-oauthlib
 packaging==25.0
     # via
+    #   gunicorn
     #   spacy
     #   thinc
     #   weasel
@@ -160,6 +165,8 @@ shellingham==1.5.4
     # via typer
 smart-open==7.4.1
     # via weasel
+soupsieve==2.8
+    # via beautifulsoup4
 spacy==3.8.7
     # via -r requirements.in
 spacy-legacy==3.0.12
@@ -182,6 +189,7 @@ typer==0.20.0
     #   weasel
 typing-extensions==4.15.0
     # via
+    #   beautifulsoup4
     #   pydantic
     #   pydantic-core
     #   typer
