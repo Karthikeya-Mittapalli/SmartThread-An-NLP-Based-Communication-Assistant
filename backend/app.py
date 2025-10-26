@@ -37,6 +37,8 @@ if os.environ.get("RENDER") or not os.path.exists(CLIENT_SECRET_PATH):
         with open(CLIENT_SECRET_PATH, "w") as f:
             f.write(client_secret_data)
 
+CLIENT_SECRET_FILE = CLIENT_SECRET_PATH
+
 
 @app.route("/")
 def home():
