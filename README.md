@@ -22,7 +22,6 @@ Before starting, make sure you have the following installed:
 
 - [Python 3.12+](https://www.python.org/downloads/)
 - [Node.js 18+ and npm](https://nodejs.org/)
-- [MongoDB](https://www.mongodb.com/try/download/community) (if using a local database)
 
 ---
 
