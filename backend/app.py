@@ -9,7 +9,7 @@ from flask_cors import CORS # type: ignore
 
 from src.email_analyzer import analyze_email
 from src.smart_reply import suggest_reply
-from utils.db import init_db, save_email, get_email_body, get_emails_from_db, update_email_priority
+from utils.db import init_db, save_email, get_email_body
 
 import os
 import time
@@ -95,14 +95,8 @@ def fetch_emails():
     profile = service.users().getProfile(userId="me").execute()
     user_id = profile.get("emailAddress", "unknown_user")
 
-    cached_emails = get_emails_from_db(user_id)
-    if cached_emails:
-        # Sort by priority before sending
-        emails_sorted = sorted(cached_emails, key=lambda e: PRIORITY_ORDER.get(e["priority"], 3))
-        return jsonify(emails_sorted)
-
     results = service.users().messages().list(
-        userId="me", labelIds=["UNREAD"], maxResults=2
+        userId="me", labelIds=["UNREAD"], maxResults=5
     ).execute()
     messages = results.get("messages", [])
 
