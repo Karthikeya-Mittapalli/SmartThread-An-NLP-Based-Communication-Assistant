@@ -9,4 +9,5 @@ requests
 spacy
 beautifulsoup4
 gunicorn
+dateparser
 vaderSentiment
