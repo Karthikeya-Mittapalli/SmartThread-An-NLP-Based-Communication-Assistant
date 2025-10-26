@@ -18,7 +18,11 @@ load_dotenv()
 init_db()
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SAMESITE='None'
+)
+CORS(app, supports_credentials=True, origins=[os.getenv("REACT_APP_FRONTEND_URL")])
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 CLIENT_SECRET_FILE = os.getenv("GOOGLE_CLIENT_SECRET_FILE")
@@ -36,6 +40,8 @@ if os.environ.get("RENDER") or not os.path.exists(CLIENT_SECRET_PATH):
     if client_secret_data:
         with open(CLIENT_SECRET_PATH, "w") as f:
             f.write(client_secret_data)
+
+CLIENT_SECRET_FILE = CLIENT_SECRET_PATH
 
 
 @app.route("/")
