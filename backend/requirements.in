@@ -11,3 +11,7 @@ beautifulsoup4
 gunicorn
 dateparser
 vaderSentiment
+nltk
+numpy
+networkx
+scipy
