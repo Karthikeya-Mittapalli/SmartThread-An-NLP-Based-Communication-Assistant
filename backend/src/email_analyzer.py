@@ -6,6 +6,7 @@ from dotenv import load_dotenv # type: ignore
 
 from src.key_manager import key_manager
 from src.priority_detection_flask import detect_priority
+from src.text_rank_summarization import textrank_summary
 
 # Load environment variables
 load_dotenv()
@@ -54,10 +55,12 @@ def summarize_email(text: str) -> str:
     }
 
     try:
+        raise requests.exceptions.RequestException("Simulated API timeout")
+        print("Attempting to summarize with LLM...")
         response = requests.post(API_URL, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
         result = response.json()
         return result["choices"][0]["message"]["content"].strip()
     except Exception as e:
-        print(f"Summarization failed: {e}")
-        return "Summary unavailable due to API error."
+        print(f"LLM API summarization failed: {e}. Falling back to local TextRank.")
+        return textrank_summary(text)
