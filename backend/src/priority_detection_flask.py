@@ -25,7 +25,7 @@ def get_nlp():
                     f"[INFO] spaCy model '{model_name}' not found. Downloading...")
                 download(model_name)
                 _nlp = spacy.load(model_name, disable=["parser"])
-        if "parser" not in _nlp.pipe_names and "senter" not in _nlp.pipe_names:
+        if "sentencizer" not in _nlp.pipe_names and "senter" not in _nlp.pipe_names:
             _nlp.add_pipe("sentencizer")
     return _nlp
 
