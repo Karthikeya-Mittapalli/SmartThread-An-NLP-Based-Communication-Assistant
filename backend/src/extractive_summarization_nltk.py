@@ -1,5 +1,9 @@
 import heapq
 import nltk
+
+from src.nltk_downloader import ensure_nltk_data
+ensure_nltk_data()
+
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
 
