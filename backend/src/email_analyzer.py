@@ -55,7 +55,6 @@ def summarize_email(text: str) -> str:
     }
 
     try:
-        raise requests.exceptions.RequestException("Simulated API timeout")
         print("Attempting to summarize with LLM...")
         response = requests.post(API_URL, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
