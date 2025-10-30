@@ -79,9 +79,10 @@ Both backend and frontend require environment variables. Create a .env file in t
 OPENROUTER_API_KEY_1 = <your_openrouter_key>
 GOOGLE_CLIENT_SECRET_FILE= client_secret.json
 GOOGLE_REDIRECT_URI= http://localhost:8000/auth/callback
-GOOGLE_SCOPES = https://www.googleapis.com/auth/gmail.readonly
+GOOGLE_SCOPES=https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly
 FLASK_SECRET_KEY = <your_secret>
 REACT_APP_FRONTEND_URL=http://localhost:3000
+GEMINI_API_KEY = <your_gemini_key>
 ```
 
 For frontend React, you can create a .env in the frontend root folder:

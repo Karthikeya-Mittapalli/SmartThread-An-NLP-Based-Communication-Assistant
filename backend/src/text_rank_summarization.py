@@ -72,39 +72,3 @@ def textrank_summary(raw_text, num_sentences=3):
     summary = ' '.join(sorted(top_sentences, key=lambda s: raw_text.find(s)))
 
     return summary
-
-# --- Example Usage ---
-
-# Sample Email Text 📧 (Same as before for comparison)
-sample_email = """
-Subject: Urgent: Q4 Project Phoenix Update and Final Review Meeting
-
-Hi Team,
-
-I hope this email finds you well.
-
-This is a critical update regarding the final stages of Project Phoenix for Q4. The project deadline is fast approaching, and we need to ensure all components are finalized and tested before the client presentation next Friday. The successful completion of Project Phoenix is our top priority for this quarter.
-
-I have scheduled a final review meeting for this Wednesday, October 29th, at 10:00 AM in Conference Room 3. Attendance is mandatory for all key stakeholders. During this meeting, we will go over the final deployment checklist, address any last-minute blockers, and assign roles for the presentation day. Please come prepared with your team's progress reports and a list of any outstanding issues.
-
-The marketing team has already prepared the initial draft of the launch announcement. They require our final feature list by the end of Wednesday's meeting to proceed. Let's make sure we provide them with accurate information.
-
-Thank you for your hard work and dedication to Project Phoenix. Let's push through this final week and deliver an exceptional product.
-
-Best regards,
-
-Alex
-Project Manager
-"""
-
-# Generate the summary using TextRank
-summary = textrank_summary(sample_email, num_sentences=3)
-
-# Print the results ✨
-print("--- ORIGINAL EMAIL ---")
-print(sample_email)
-print(f"\nOriginal Length (chars): {len(sample_email)}")
-print("\n" + "="*30 + "\n")
-print("--- GENERATED TEXTRANK SUMMARY ---")
-print(summary)
-print(f"\nSummary Length (chars): {len(summary)}")

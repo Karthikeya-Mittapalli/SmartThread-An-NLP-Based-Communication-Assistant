@@ -12,8 +12,6 @@ import google.generativeai as genai # type: ignore
 # Load environment variables
 load_dotenv()
 
-API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "google/gemma-2-9b-it:free"
 
 
 def analyze_email(text: str) -> dict:
