@@ -7,6 +7,7 @@ from dotenv import load_dotenv # type: ignore
 from src.key_manager import key_manager
 from src.priority_detection_flask import detect_priority
 from src.text_rank_summarization import textrank_summary
+import google.generativeai as genai # type: ignore
 
 # Load environment variables
 load_dotenv()
@@ -37,29 +38,24 @@ def analyze_email(text: str) -> dict:
 
 def summarize_email(text: str) -> str:
     """
-    Generate a short summary using LLM (Gemma or other model).
-    Fallback gracefully if API fails.
+    Generate a short summary using Google Gemini API.
+    Fallback gracefully to local TextRank summarization if API fails.
     """
-    headers = {
-        "Authorization": f"Bearer {key_manager.get_key()}",
-        "Content-Type": "application/json",
-    }
-
-    payload = {
-        "model": MODEL,
-        "messages": [
-            {"role": "system", "content": "You are an assistant that summarizes emails clearly and concisely."},
-            {"role": "user", "content": f"Summarize this email in 2 sentences:\n\n{text}"}
-        ],
-        "temperature": 0.3
-    }
-
     try:
-        print("Attempting to summarize with LLM...")
-        response = requests.post(API_URL, headers=headers, data=json.dumps(payload))
-        response.raise_for_status()
-        result = response.json()
-        return result["choices"][0]["message"]["content"].strip()
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        model = genai.GenerativeModel("gemini-2.0-flash")
+        prompt = (
+            "You are an assistant that summarizes emails clearly and concisely."
+            "Provide the key points and tone of the email in 2 sentences. \n\n"
+            f"Email content:\n{text}"
+        )
+        response = model.generate_content(prompt)
+        
+        if response and hasattr(response, "text"):
+            return response.text.strip()
+
+        print("Gemini response empty, failing back to TextRank.")
+        return textrank_summary(text)
     except Exception as e:
-        print(f"LLM API summarization failed: {e}. Falling back to local TextRank.")
+        print(f"Gemini API summarization failed: {e}. Falling back to TextRank.")
         return textrank_summary(text)
